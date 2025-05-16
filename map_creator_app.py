@@ -228,7 +228,6 @@ class BARMapCreatorApp:
             self.update_chat_history(f"Map Creation Error: {e}\n")
             self.logger.error(f"Map creation error: {e}")
             messagebox.showerror("Map Creation Error", str(e))
-eate the main layout
         self.create_layout()
         
         # Initialize preview
@@ -594,8 +593,11 @@ if __name__ == "__main__":
     create_requirements()
     create_readme()
     create_startup_script()
-    
+
     # Start the application
     root = tk.Tk()
     app = BARMapCreatorApp(root)
+    # Ensure main layout is created (if not done in __init__)
+    if hasattr(app, 'create_layout'):
+        app.create_layout()
     root.mainloop()
