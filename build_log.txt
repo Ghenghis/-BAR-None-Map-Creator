@@ -1,0 +1,206 @@
+Cleaning previous builds and environments... 
+Creating clean virtual environment... 
+Upgrading pip... 
+Requirement already satisfied: pip in c:\users\admin\bar-mapcreator\clean_build_env\lib\site-packages (24.0)
+Collecting pip
+  Using cached pip-25.1.1-py3-none-any.whl.metadata (3.6 kB)
+Using cached pip-25.1.1-py3-none-any.whl (1.8 MB)
+Installing collected packages: pip
+  Attempting uninstall: pip
+    Found existing installation: pip 24.0
+    Uninstalling pip-24.0:
+      Successfully uninstalled pip-24.0
+Successfully installed pip-25.1.1
+Installing dependencies... 
+Collecting numpy (from -r requirements.txt (line 1))
+  Using cached numpy-2.2.5-cp311-cp311-win_amd64.whl.metadata (60 kB)
+Collecting pillow (from -r requirements.txt (line 2))
+  Using cached pillow-11.2.1-cp311-cp311-win_amd64.whl.metadata (9.1 kB)
+Collecting scipy (from -r requirements.txt (line 3))
+  Using cached scipy-1.15.3-cp311-cp311-win_amd64.whl.metadata (60 kB)
+Collecting openai (from -r requirements.txt (line 4))
+  Using cached openai-1.78.1-py3-none-any.whl.metadata (25 kB)
+Collecting python-dotenv (from -r requirements.txt (line 5))
+  Using cached python_dotenv-1.1.0-py3-none-any.whl.metadata (24 kB)
+Collecting speechrecognition (from -r requirements.txt (line 6))
+  Using cached speechrecognition-3.14.3-py3-none-any.whl.metadata (30 kB)
+Collecting pyaudio (from -r requirements.txt (line 7))
+  Using cached PyAudio-0.2.14-cp311-cp311-win_amd64.whl.metadata (2.7 kB)
+Collecting pyinstaller (from -r requirements.txt (line 8))
+  Using cached pyinstaller-6.13.0-py3-none-win_amd64.whl.metadata (8.3 kB)
+Collecting anyio<5,>=3.5.0 (from openai->-r requirements.txt (line 4))
+  Using cached anyio-4.9.0-py3-none-any.whl.metadata (4.7 kB)
+Collecting distro<2,>=1.7.0 (from openai->-r requirements.txt (line 4))
+  Using cached distro-1.9.0-py3-none-any.whl.metadata (6.8 kB)
+Collecting httpx<1,>=0.23.0 (from openai->-r requirements.txt (line 4))
+  Using cached httpx-0.28.1-py3-none-any.whl.metadata (7.1 kB)
+Collecting jiter<1,>=0.4.0 (from openai->-r requirements.txt (line 4))
+  Using cached jiter-0.9.0-cp311-cp311-win_amd64.whl.metadata (5.3 kB)
+Collecting pydantic<3,>=1.9.0 (from openai->-r requirements.txt (line 4))
+  Using cached pydantic-2.11.4-py3-none-any.whl.metadata (66 kB)
+Collecting sniffio (from openai->-r requirements.txt (line 4))
+  Using cached sniffio-1.3.1-py3-none-any.whl.metadata (3.9 kB)
+Collecting tqdm>4 (from openai->-r requirements.txt (line 4))
+  Using cached tqdm-4.67.1-py3-none-any.whl.metadata (57 kB)
+Collecting typing-extensions<5,>=4.11 (from openai->-r requirements.txt (line 4))
+  Using cached typing_extensions-4.13.2-py3-none-any.whl.metadata (3.0 kB)
+Collecting idna>=2.8 (from anyio<5,>=3.5.0->openai->-r requirements.txt (line 4))
+  Using cached idna-3.10-py3-none-any.whl.metadata (10 kB)
+Collecting certifi (from httpx<1,>=0.23.0->openai->-r requirements.txt (line 4))
+  Using cached certifi-2025.4.26-py3-none-any.whl.metadata (2.5 kB)
+Collecting httpcore==1.* (from httpx<1,>=0.23.0->openai->-r requirements.txt (line 4))
+  Using cached httpcore-1.0.9-py3-none-any.whl.metadata (21 kB)
+Collecting h11>=0.16 (from httpcore==1.*->httpx<1,>=0.23.0->openai->-r requirements.txt (line 4))
+  Using cached h11-0.16.0-py3-none-any.whl.metadata (8.3 kB)
+Collecting annotated-types>=0.6.0 (from pydantic<3,>=1.9.0->openai->-r requirements.txt (line 4))
+  Using cached annotated_types-0.7.0-py3-none-any.whl.metadata (15 kB)
+Collecting pydantic-core==2.33.2 (from pydantic<3,>=1.9.0->openai->-r requirements.txt (line 4))
+  Using cached pydantic_core-2.33.2-cp311-cp311-win_amd64.whl.metadata (6.9 kB)
+Collecting typing-inspection>=0.4.0 (from pydantic<3,>=1.9.0->openai->-r requirements.txt (line 4))
+  Using cached typing_inspection-0.4.0-py3-none-any.whl.metadata (2.6 kB)
+Requirement already satisfied: setuptools>=42.0.0 in c:\users\admin\bar-mapcreator\clean_build_env\lib\site-packages (from pyinstaller->-r requirements.txt (line 8)) (65.5.0)
+Collecting altgraph (from pyinstaller->-r requirements.txt (line 8))
+  Using cached altgraph-0.17.4-py2.py3-none-any.whl.metadata (7.3 kB)
+Collecting pefile!=2024.8.26,>=2022.5.30 (from pyinstaller->-r requirements.txt (line 8))
+  Using cached pefile-2023.2.7-py3-none-any.whl.metadata (1.4 kB)
+Collecting pywin32-ctypes>=0.2.1 (from pyinstaller->-r requirements.txt (line 8))
+  Using cached pywin32_ctypes-0.2.3-py3-none-any.whl.metadata (3.9 kB)
+Collecting pyinstaller-hooks-contrib>=2025.2 (from pyinstaller->-r requirements.txt (line 8))
+  Using cached pyinstaller_hooks_contrib-2025.4-py3-none-any.whl.metadata (16 kB)
+Collecting packaging>=22.0 (from pyinstaller->-r requirements.txt (line 8))
+  Using cached packaging-25.0-py3-none-any.whl.metadata (3.3 kB)
+Collecting colorama (from tqdm>4->openai->-r requirements.txt (line 4))
+  Using cached colorama-0.4.6-py2.py3-none-any.whl.metadata (17 kB)
+Using cached numpy-2.2.5-cp311-cp311-win_amd64.whl (12.9 MB)
+Using cached pillow-11.2.1-cp311-cp311-win_amd64.whl (2.7 MB)
+Using cached scipy-1.15.3-cp311-cp311-win_amd64.whl (41.2 MB)
+Using cached openai-1.78.1-py3-none-any.whl (680 kB)
+Using cached anyio-4.9.0-py3-none-any.whl (100 kB)
+Using cached distro-1.9.0-py3-none-any.whl (20 kB)
+Using cached httpx-0.28.1-py3-none-any.whl (73 kB)
+Using cached httpcore-1.0.9-py3-none-any.whl (78 kB)
+Using cached jiter-0.9.0-cp311-cp311-win_amd64.whl (210 kB)
+Using cached pydantic-2.11.4-py3-none-any.whl (443 kB)
+Using cached pydantic_core-2.33.2-cp311-cp311-win_amd64.whl (2.0 MB)
+Using cached typing_extensions-4.13.2-py3-none-any.whl (45 kB)
+Using cached python_dotenv-1.1.0-py3-none-any.whl (20 kB)
+Using cached speechrecognition-3.14.3-py3-none-any.whl (32.9 MB)
+Using cached PyAudio-0.2.14-cp311-cp311-win_amd64.whl (164 kB)
+Using cached pyinstaller-6.13.0-py3-none-win_amd64.whl (1.4 MB)
+Using cached annotated_types-0.7.0-py3-none-any.whl (13 kB)
+Using cached h11-0.16.0-py3-none-any.whl (37 kB)
+Using cached idna-3.10-py3-none-any.whl (70 kB)
+Using cached packaging-25.0-py3-none-any.whl (66 kB)
+Using cached pefile-2023.2.7-py3-none-any.whl (71 kB)
+Using cached pyinstaller_hooks_contrib-2025.4-py3-none-any.whl (434 kB)
+Using cached pywin32_ctypes-0.2.3-py3-none-any.whl (30 kB)
+Using cached sniffio-1.3.1-py3-none-any.whl (10 kB)
+Using cached tqdm-4.67.1-py3-none-any.whl (78 kB)
+Using cached typing_inspection-0.4.0-py3-none-any.whl (14 kB)
+Using cached altgraph-0.17.4-py2.py3-none-any.whl (21 kB)
+Using cached certifi-2025.4.26-py3-none-any.whl (159 kB)
+Using cached colorama-0.4.6-py2.py3-none-any.whl (25 kB)
+Installing collected packages: pyaudio, altgraph, typing-extensions, sniffio, pywin32-ctypes, python-dotenv, pillow, pefile, packaging, numpy, jiter, idna, h11, distro, colorama, certifi, annotated-types, typing-inspection, tqdm, speechrecognition, scipy, pyinstaller-hooks-contrib, pydantic-core, httpcore, anyio, pyinstaller, pydantic, httpx, openai
+
+Successfully installed altgraph-0.17.4 annotated-types-0.7.0 anyio-4.9.0 certifi-2025.4.26 colorama-0.4.6 distro-1.9.0 h11-0.16.0 httpcore-1.0.9 httpx-0.28.1 idna-3.10 jiter-0.9.0 numpy-2.2.5 openai-1.78.1 packaging-25.0 pefile-2023.2.7 pillow-11.2.1 pyaudio-0.2.14 pydantic-2.11.4 pydantic-core-2.33.2 pyinstaller-6.13.0 pyinstaller-hooks-contrib-2025.4 python-dotenv-1.1.0 pywin32-ctypes-0.2.3 scipy-1.15.3 sniffio-1.3.1 speechrecognition-3.14.3 tqdm-4.67.1 typing-extensions-4.13.2 typing-inspection-0.4.0
+Building the standalone EXE... 
+199 INFO: PyInstaller: 6.13.0, contrib hooks: 2025.4
+199 INFO: Python: 3.11.9
+206 INFO: Platform: Windows-10-10.0.26100-SP0
+206 INFO: Python environment: C:\Users\Admin\BAR-MapCreator\clean_build_env
+206 INFO: wrote C:\Users\Admin\BAR-MapCreator\BAR-Map-Creator.exe.spec
+211 INFO: Module search paths (PYTHONPATH):
+['C:\\Users\\Admin\\BAR-MapCreator\\clean_build_env\\Scripts\\pyinstaller.exe',
+ 'J:\\Projects\\MCP_Agents_Claude\\src',
+ 'C:\\Program Files\\Python311\\python311.zip',
+ 'C:\\Program Files\\Python311\\DLLs',
+ 'C:\\Program Files\\Python311\\Lib',
+ 'C:\\Program Files\\Python311',
+ 'C:\\Users\\Admin\\BAR-MapCreator\\clean_build_env',
+ 'C:\\Users\\Admin\\BAR-MapCreator\\clean_build_env\\Lib\\site-packages',
+ 'C:\\Users\\Admin\\BAR-MapCreator']
+571 INFO: checking Analysis
+571 INFO: Building Analysis because Analysis-00.toc is non existent
+571 INFO: Running Analysis Analysis-00.toc
+571 INFO: Target bytecode optimization level: 0
+572 INFO: Initializing module dependency graph...
+573 INFO: Initializing module graph hook caches...
+587 INFO: Analyzing modules for base_library.zip ...
+1664 INFO: Processing standard module hook 'hook-heapq.py' from 'C:\\Users\\Admin\\BAR-MapCreator\\clean_build_env\\Lib\\site-packages\\PyInstaller\\hooks'
+1722 INFO: Processing standard module hook 'hook-encodings.py' from 'C:\\Users\\Admin\\BAR-MapCreator\\clean_build_env\\Lib\\site-packages\\PyInstaller\\hooks'
+3002 INFO: Processing standard module hook 'hook-pickle.py' from 'C:\\Users\\Admin\\BAR-MapCreator\\clean_build_env\\Lib\\site-packages\\PyInstaller\\hooks'
+4079 INFO: Caching module dependency graph...
+4107 INFO: Looking for Python shared library...
+4116 INFO: Using Python shared library: C:\Program Files\Python311\python311.dll
+4116 INFO: Analyzing C:\Users\Admin\BAR-MapCreator\map_creator_app.py
+4130 INFO: Processing pre-find-module-path hook 'hook-tkinter.py' from 'C:\\Users\\Admin\\BAR-MapCreator\\clean_build_env\\Lib\\site-packages\\PyInstaller\\hooks\\pre_find_module_path'
+4130 INFO: TclTkInfo: initializing cached Tcl/Tk info...
+4323 INFO: Processing standard module hook 'hook-_tkinter.py' from 'C:\\Users\\Admin\\BAR-MapCreator\\clean_build_env\\Lib\\site-packages\\PyInstaller\\hooks'
+4392 INFO: Processing standard module hook 'hook-numpy.py' from 'C:\\Users\\Admin\\BAR-MapCreator\\clean_build_env\\Lib\\site-packages\\PyInstaller\\hooks'
+4607 INFO: Processing standard module hook 'hook-platform.py' from 'C:\\Users\\Admin\\BAR-MapCreator\\clean_build_env\\Lib\\site-packages\\PyInstaller\\hooks'
+4725 INFO: Processing standard module hook 'hook-sysconfig.py' from 'C:\\Users\\Admin\\BAR-MapCreator\\clean_build_env\\Lib\\site-packages\\PyInstaller\\hooks'
+5420 INFO: Processing standard module hook 'hook-difflib.py' from 'C:\\Users\\Admin\\BAR-MapCreator\\clean_build_env\\Lib\\site-packages\\PyInstaller\\hooks'
+5540 INFO: Processing standard module hook 'hook-multiprocessing.util.py' from 'C:\\Users\\Admin\\BAR-MapCreator\\clean_build_env\\Lib\\site-packages\\PyInstaller\\hooks'
+5592 INFO: Processing standard module hook 'hook-xml.py' from 'C:\\Users\\Admin\\BAR-MapCreator\\clean_build_env\\Lib\\site-packages\\PyInstaller\\hooks'
+6426 INFO: Processing pre-safe-import-module hook 'hook-typing_extensions.py' from 'C:\\Users\\Admin\\BAR-MapCreator\\clean_build_env\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+6427 INFO: SetuptoolsInfo: initializing cached setuptools info...
+7309 INFO: Processing standard module hook 'hook-PIL.py' from 'C:\\Users\\Admin\\BAR-MapCreator\\clean_build_env\\Lib\\site-packages\\PyInstaller\\hooks'
+7379 INFO: Processing standard module hook 'hook-PIL.Image.py' from 'C:\\Users\\Admin\\BAR-MapCreator\\clean_build_env\\Lib\\site-packages\\PyInstaller\\hooks'
+7678 INFO: Processing standard module hook 'hook-xml.etree.cElementTree.py' from 'C:\\Users\\Admin\\BAR-MapCreator\\clean_build_env\\Lib\\site-packages\\PyInstaller\\hooks'
+7815 INFO: Processing standard module hook 'hook-PIL.ImageFilter.py' from 'C:\\Users\\Admin\\BAR-MapCreator\\clean_build_env\\Lib\\site-packages\\PyInstaller\\hooks'
+7960 INFO: Processing standard module hook 'hook-scipy.py' from 'C:\\Users\\Admin\\BAR-MapCreator\\clean_build_env\\Lib\\site-packages\\PyInstaller\\hooks'
+8785 INFO: Processing standard module hook 'hook-scipy.linalg.py' from 'C:\\Users\\Admin\\BAR-MapCreator\\clean_build_env\\Lib\\site-packages\\PyInstaller\\hooks'
+8874 INFO: Processing standard module hook 'hook-scipy.special._ufuncs.py' from 'C:\\Users\\Admin\\BAR-MapCreator\\clean_build_env\\Lib\\site-packages\\PyInstaller\\hooks'
+8993 INFO: Processing standard module hook 'hook-scipy.special._ellip_harm_2.py' from 'C:\\Users\\Admin\\BAR-MapCreator\\clean_build_env\\Lib\\site-packages\\PyInstaller\\hooks'
+10090 INFO: Processing standard module hook 'hook-scipy.sparse.csgraph.py' from 'C:\\Users\\Admin\\BAR-MapCreator\\clean_build_env\\Lib\\site-packages\\PyInstaller\\hooks'
+10279 INFO: Processing standard module hook 'hook-scipy.spatial.transform.rotation.py' from 'C:\\Users\\Admin\\BAR-MapCreator\\clean_build_env\\Lib\\site-packages\\PyInstaller\\hooks'
+11946 INFO: Processing standard module hook 'hook-scipy.stats._stats.py' from 'C:\\Users\\Admin\\BAR-MapCreator\\clean_build_env\\Lib\\site-packages\\PyInstaller\\hooks'
+12917 INFO: Processing standard module hook 'hook-pydantic.py' from 'C:\\Users\\Admin\\BAR-MapCreator\\clean_build_env\\Lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+C:\Users\Admin\BAR-MapCreator\clean_build_env\Lib\site-packages\pydantic\experimental\__init__.py:7: PydanticExperimentalWarning: This module is experimental, its contents are subject to change and deprecation.
+  warnings.warn(
+13509 INFO: Processing standard module hook 'hook-zoneinfo.py' from 'C:\\Users\\Admin\\BAR-MapCreator\\clean_build_env\\Lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+14376 INFO: Processing standard module hook 'hook-certifi.py' from 'C:\\Users\\Admin\\BAR-MapCreator\\clean_build_env\\Lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+14444 INFO: Processing standard module hook 'hook-anyio.py' from 'C:\\Users\\Admin\\BAR-MapCreator\\clean_build_env\\Lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+16135 INFO: Processing standard module hook 'hook-speech_recognition.py' from 'C:\\Users\\Admin\\BAR-MapCreator\\clean_build_env\\Lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+16226 INFO: Processing pre-safe-import-module hook 'hook-tensorflow.py' from 'C:\\Users\\Admin\\BAR-MapCreator\\clean_build_env\\Lib\\site-packages\\_pyinstaller_hooks_contrib\\pre_safe_import_module'
+16250 INFO: Processing module hooks (post-graph stage)...
+16432 INFO: Processing pre-safe-import-module hook 'hook-tomli.py' from 'C:\\Users\\Admin\\BAR-MapCreator\\clean_build_env\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+16488 WARNING: Hidden import "tzdata" not found!
+16665 INFO: Processing standard module hook 'hook-PIL.SpiderImagePlugin.py' from 'C:\\Users\\Admin\\BAR-MapCreator\\clean_build_env\\Lib\\site-packages\\PyInstaller\\hooks'
+16746 WARNING: Hidden import "scipy.special._cdflib" not found!
+16776 INFO: Processing standard module hook 'hook-_tkinter.py' from 'C:\\Users\\Admin\\BAR-MapCreator\\clean_build_env\\Lib\\site-packages\\PyInstaller\\hooks'
+16793 INFO: Performing binary vs. data reclassification (943 entries)
+16886 INFO: Looking for ctypes DLLs
+17092 INFO: Analyzing run-time hooks ...
+17099 INFO: Including run-time hook 'pyi_rth_inspect.py' from 'C:\\Users\\Admin\\BAR-MapCreator\\clean_build_env\\Lib\\site-packages\\PyInstaller\\hooks\\rthooks'
+17101 INFO: Including run-time hook 'pyi_rth_pkgutil.py' from 'C:\\Users\\Admin\\BAR-MapCreator\\clean_build_env\\Lib\\site-packages\\PyInstaller\\hooks\\rthooks'
+17103 INFO: Including run-time hook 'pyi_rth_multiprocessing.py' from 'C:\\Users\\Admin\\BAR-MapCreator\\clean_build_env\\Lib\\site-packages\\PyInstaller\\hooks\\rthooks'
+17104 INFO: Including run-time hook 'pyi_rth__tkinter.py' from 'C:\\Users\\Admin\\BAR-MapCreator\\clean_build_env\\Lib\\site-packages\\PyInstaller\\hooks\\rthooks'
+17140 INFO: Creating base_library.zip...
+17189 INFO: Looking for dynamic libraries
+C:\Users\Admin\BAR-MapCreator\clean_build_env\Lib\site-packages\pydantic\experimental\__init__.py:7: PydanticExperimentalWarning: This module is experimental, its contents are subject to change and deprecation.
+  warnings.warn(
+18467 INFO: Extra DLL search directories (AddDllDirectory): ['C:\\Users\\Admin\\BAR-MapCreator\\clean_build_env\\Lib\\site-packages\\scipy.libs', 'C:\\Users\\Admin\\BAR-MapCreator\\clean_build_env\\Lib\\site-packages\\numpy.libs']
+18467 INFO: Extra DLL search directories (PATH): []
+20653 INFO: Warnings written to C:\Users\Admin\BAR-MapCreator\build\BAR-Map-Creator.exe\warn-BAR-Map-Creator.exe.txt
+20777 INFO: Graph cross-reference written to C:\Users\Admin\BAR-MapCreator\build\BAR-Map-Creator.exe\xref-BAR-Map-Creator.exe.html
+20824 INFO: checking PYZ
+20824 INFO: Building PYZ because PYZ-00.toc is non existent
+20824 INFO: Building PYZ (ZlibArchive) C:\Users\Admin\BAR-MapCreator\build\BAR-Map-Creator.exe\PYZ-00.pyz
+22242 INFO: Building PYZ (ZlibArchive) C:\Users\Admin\BAR-MapCreator\build\BAR-Map-Creator.exe\PYZ-00.pyz completed successfully.
+22285 INFO: checking PKG
+22285 INFO: Building PKG because PKG-00.toc is non existent
+22285 INFO: Building PKG (CArchive) BAR-Map-Creator.pkg
+38294 INFO: Building PKG (CArchive) BAR-Map-Creator.pkg completed successfully.
+38306 INFO: Bootloader C:\Users\Admin\BAR-MapCreator\clean_build_env\Lib\site-packages\PyInstaller\bootloader\Windows-64bit-intel\runw.exe
+38306 INFO: checking EXE
+38306 INFO: Building EXE because EXE-00.toc is non existent
+38306 INFO: Building EXE from EXE-00.toc
+38307 INFO: Copying bootloader EXE to C:\Users\Admin\BAR-MapCreator\dist\BAR-Map-Creator.exe
+38309 INFO: Copying icon to EXE
+38311 INFO: Copying 0 resources to EXE
+38311 INFO: Embedding manifest in EXE
+38313 INFO: Appending PKG archive to EXE
+38386 INFO: Fixing EXE headers
+38716 INFO: Building EXE from EXE-00.toc completed successfully.
+38730 INFO: Build complete! The results are available in: C:\Users\Admin\BAR-MapCreator\dist

@@ -1,3 +1,8 @@
 numpy
 pillow
 scipy
+openai
+python-dotenv
+speechrecognition
+pyaudio
+pyinstaller
