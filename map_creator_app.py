@@ -9,6 +9,7 @@ import subprocess
 import sys
 import pathlib # Added for Path object
 import tempfile # Added for temporary directory
+from ttkthemes import ThemedTk # Added for ttkthemes
 
 # Import our modules
 from mapgen_core import BARMapGenerator
@@ -19,6 +20,17 @@ from openai import APIError, AuthenticationError, RateLimitError, APIConnectionE
 
 # Define the configuration file path
 CONFIG_FILE_PATH = pathlib.Path.home() / ".bar_map_creator_settings.json"
+
+# Define path to icons (assuming it's relative to the script or bundled app)
+# This function helps in resolving paths for both development and PyInstaller bundled app
+def get_asset_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
 
 def load_config():
     """Loads configuration from a JSON file."""
@@ -103,23 +115,26 @@ class BARMapCreatorApp:
         self.root.geometry("1000x700")
         self.root.minsize(800, 600)
         
-        # Set dark theme colors
-        self.bg_color = "#1B2838"  # Dark navy
-        self.text_color = "#CCCCCC"  # Light gray
-        self.accent_color = "#FF6B00"  # Bright orange
-        self.button_color = "#2A3F5A"  # Medium navy
+        # Load icons
+        icon_definitions = {
+            "mic": "assets/icons/mic.png",
+            "send": "assets/icons/send.png",
+            "preview": "assets/icons/preview.png",
+            "create_map": "assets/icons/create_map.png",
+            "browse": "assets/icons/browse.png"
+        }
+        self.icons = {}
+        for name, path in icon_definitions.items():
+            try:
+                full_path = get_asset_path(path)
+                self.icons[name] = tk.PhotoImage(file=full_path)
+            except tk.TclError:
+                self.icons[name] = None # Fallback if icon not found
+                self.logger.warning(f"Could not load {name}.png icon from {full_path}.")
+
 
         # Load configuration
         self.config = load_config()
-        
-        # Configure the root window
-        self.root.configure(bg=self.bg_color)
-        self.style = ttk.Style()
-        self.style.theme_use('default')
-        self.style.configure('TFrame', background=self.bg_color)
-        self.style.configure('TLabel', background=self.bg_color, foreground=self.text_color)
-        self.style.configure('TButton', background=self.button_color, foreground=self.text_color)
-        self.style.map('TButton', background=[('active', self.accent_color)])
         
         # Initialize path variables from config or defaults
         self.output_path = tk.StringVar(value=self.config.get("output_path", os.path.abspath("generated_maps")))
@@ -195,16 +210,28 @@ class BARMapCreatorApp:
         self.chat_history.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         ToolTip(self.chat_history, self.help_texts['chatbox'])
 
-        self.chat_entry = tk.Entry(self.chat_frame)
+        self.chat_entry = ttk.Entry(self.chat_frame) # Changed from tk.Entry to ttk.Entry
         self.chat_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
         self.chat_entry.bind('<Return>', lambda e: self.send_chat())
         ToolTip(self.chat_entry, self.help_texts['chatbox'])
 
-        self.mic_button = ttk.Button(self.chat_frame, text="🎤", command=self.listen_mic)
+        mic_button_config = {"command": self.listen_mic}
+        if self.icons.get("mic"):
+            mic_button_config["image"] = self.icons["mic"]
+        else:
+            mic_button_config["text"] = "🎤" # Fallback text
+        self.mic_button = ttk.Button(self.chat_frame, **mic_button_config)
         self.mic_button.pack(side=tk.LEFT, padx=2)
         ToolTip(self.mic_button, "Click to use your microphone for chat input.")
 
-        self.send_button = ttk.Button(self.chat_frame, text="Send", command=self.send_chat)
+        send_button_config = {"command": self.send_chat}
+        if self.icons.get("send"):
+            send_button_config["image"] = self.icons["send"]
+            send_button_config["text"] = "Send"
+            send_button_config["compound"] = tk.LEFT
+        else:
+            send_button_config["text"] = "Send" # Fallback text
+        self.send_button = ttk.Button(self.chat_frame, **send_button_config)
         self.send_button.pack(side=tk.LEFT)
         ToolTip(self.send_button, "Send your chat message to the AI assistant.")
 
@@ -472,10 +499,16 @@ class BARMapCreatorApp:
         install_checkbox = ttk.Checkbutton(button_frame, text="Install to BAR after creation", variable=self.install_to_bar)
         install_checkbox.pack(side=tk.TOP, fill=tk.X, padx=5, pady=(0, 5))
 
-        preview_button = ttk.Button(button_frame, text="Generate Preview", command=self.generate_preview)
+        preview_button_config = {"command": self.generate_preview, "text": "Preview", "compound": tk.LEFT}
+        if self.icons.get("preview"):
+            preview_button_config["image"] = self.icons["preview"]
+        preview_button = ttk.Button(button_frame, **preview_button_config)
         preview_button.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
 
-        create_button = ttk.Button(button_frame, text="Create Map", command=self.create_map)
+        create_button_config = {"command": self.create_map, "text": "Create", "compound": tk.LEFT}
+        if self.icons.get("create_map"):
+            create_button_config["image"] = self.icons["create_map"]
+        create_button = ttk.Button(button_frame, **create_button_config)
         create_button.pack(side=tk.RIGHT, fill=tk.X, expand=True, padx=5)
 
         # Placeholder for future SD7 handler features
@@ -492,11 +525,16 @@ class BARMapCreatorApp:
         output_label = ttk.Label(output_frame, text="Output Directory:")
         output_label.pack(side=tk.LEFT)
         
-        # self.output_path is now initialized in __init__
         output_entry = ttk.Entry(output_frame, textvariable=self.output_path, state="readonly")
         output_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
         
-        browse_button = ttk.Button(output_frame, text="...", width=3, command=self.browse_output_and_save_config)
+        browse_output_button_config = {"command": self.browse_output_and_save_config}
+        if self.icons.get("browse"):
+            browse_output_button_config["image"] = self.icons["browse"]
+        else:
+            browse_output_button_config["text"] = "..."
+            browse_output_button_config["width"] = 3
+        browse_button = ttk.Button(output_frame, **browse_output_button_config)
         browse_button.pack(side=tk.RIGHT)
         
         # Installation path
@@ -505,14 +543,16 @@ class BARMapCreatorApp:
         install_label = ttk.Label(install_frame, text="BAR Installation:")
         install_label.pack(side=tk.LEFT)
         
-        # Try to find BAR installation
-        # The application will need to implement a method to auto-detect this path 
-        # or allow the user to set it. This value would then be loaded (e.g., from a config).
-        # self.install_path is now initialized in __init__
         install_entry = ttk.Entry(install_frame, textvariable=self.install_path, state="readonly")
         install_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
         
-        browse_install_button = ttk.Button(install_frame, text="...", width=3, command=self.browse_install_and_save_config)
+        browse_install_button_config = {"command": self.browse_install_and_save_config}
+        if self.icons.get("browse"):
+            browse_install_button_config["image"] = self.icons["browse"]
+        else:
+            browse_install_button_config["text"] = "..."
+            browse_install_button_config["width"] = 3
+        browse_install_button = ttk.Button(install_frame, **browse_install_button_config)
         browse_install_button.pack(side=tk.RIGHT)
         
         # Right panel (preview)
@@ -649,29 +689,42 @@ class BARMapCreatorApp:
             spots = self.map_generator.generate_metal_spots(heightmap, num_spots=metal_spots)
 
             # Create map config
-            self.map_generator.create_map_config(map_dir, map_name, description, spots)
+            self.map_generator.create_map_config(map_dir, name=map_name, description=description, metal_spots=spots, heightmap_shape=heightmap.shape)
+
 
             # Generate textures
             self.map_generator.generate_textures(heightmap, map_dir)
 
             # Create archive, pass install option
             install_to_bar = self.install_to_bar.get()
-            archive_dir = self.map_generator.create_map_archive(map_dir, map_name, install=install_to_bar)
+            # Pass the app's sd7_handler instance to create_map_archive
+            archive_file_path = self.map_generator.create_map_archive(
+                map_dir, 
+                map_name, 
+                install=install_to_bar,
+                sd7_handler_instance=self.sd7_handler 
+            )
+
 
             # Update status
-            if install_to_bar:
-                status_msg = f"Map created and installed to BAR maps directory!"
-                info_msg = (
-                    f"Map created and installed to BAR!\n\nFiles are in: {archive_dir}\n\n"
-                    f"The map is now available in your BAR game.")
+            if archive_file_path:
+                if install_to_bar:
+                    status_msg = f"Map created and installed to BAR maps directory!"
+                    info_msg = (
+                        f"Map created and installed to BAR!\n\nSD7 file at: {archive_file_path}\n\n"
+                        f"The map is now available in your BAR game.")
+                else:
+                    status_msg = f"Map created successfully in {archive_file_path}"
+                    info_msg = (
+                        f"Map created successfully!\n\nSD7 file at: {archive_file_path}\n\n"
+                        f"To use this map in Beyond All Reason, copy the .sd7 file to your BAR maps directory or install via SD7 Tools.")
             else:
-                status_msg = f"Map created successfully in {archive_dir}"
-                info_msg = (
-                    f"Map created successfully!\n\nFiles are in: {archive_dir}\n\n"
-                    f"To use this map in Beyond All Reason, copy the files to your BAR maps directory.")
+                status_msg = "Map creation failed. Check logs."
+                info_msg = "Map creation failed. Could not create SD7 archive. Please check logs for details."
+
 
             self.root.after(0, lambda: self.status_var.set(status_msg))
-            self.root.after(0, lambda: messagebox.showinfo("Success", info_msg))
+            self.root.after(0, lambda: messagebox.showinfo("Success" if archive_file_path else "Error", info_msg))
 
         except Exception as e:
             self.root.after(0, lambda: self.status_var.set(f"Error creating map: {e}"))
@@ -679,7 +732,7 @@ class BARMapCreatorApp:
 
 if __name__ == "__main__":
     # Start the application
-    root = tk.Tk()
+    root = ThemedTk(theme="arc") # Changed to ThemedTk
     app = BARMapCreatorApp(root)
     # Ensure main layout is created (if not done in __init__)
     if hasattr(app, 'create_layout'):

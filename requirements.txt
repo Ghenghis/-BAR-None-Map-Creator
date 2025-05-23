@@ -7,3 +7,5 @@ speechrecognition
 pyaudio
 pyinstaller
 appdirs
+ttkthemes
+pytest

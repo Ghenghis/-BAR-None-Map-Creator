@@ -12,9 +12,8 @@ a = Analysis(
         # and add it here, e.g., ('path/to/portaudio_x64.dll', '.')
     ],
     datas=[
-        # Example: If icon.ico is in the root of the project
-        # ('icon.ico', '.') 
-        # TODO: Developer should add ('icon.ico', '.') if icon.ico exists in project root.
+        # ('icon.ico', '.'), # TODO: Developer should add if icon.ico exists in project root.
+        ('assets/icons', 'assets/icons') # Added for button icons
     ],
     hiddenimports=[
         'speech_recognition.recognizers.google',
@@ -27,11 +26,12 @@ a = Analysis(
         'tkinter.filedialog', # Sometimes needed explicitly
         'tkinter.messagebox',  # Sometimes needed explicitly
         'appdirs', # Added for user-specific log directory
+        'ttkthemes', # Added for themed Tk widgets
     ],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=[],
+    excludes=['tests'], # Added 'tests' directory to excludes
     noarchive=False,
     optimize=0,
 )

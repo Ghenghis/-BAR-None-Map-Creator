@@ -14,7 +14,10 @@ class BARMapGenerator:
         os.makedirs(output_dir, exist_ok=True)
         
     def generate_heightmap(self, size=1024, hill_count=20, smoothing=5):
-        """Generate a basic heightmap with hills and valleys"""
+        """
+        Generate a basic heightmap with hills and valleys.
+        Smoothing and normalization logic updated.
+        """
         heightmap = np.zeros((size, size), dtype=np.float32)
         
         # Add random hills
@@ -22,25 +25,32 @@ class BARMapGenerator:
             x = random.randint(0, size-1)
             y = random.randint(0, size-1)
             radius = random.randint(50, 200)
-            height = random.uniform(0.2, 1.0)
+            height_val = random.uniform(0.2, 1.0) # Renamed to avoid conflict
             
             for i in range(max(0, x-radius), min(size, x+radius)):
                 for j in range(max(0, y-radius), min(size, y+radius)):
                     dist = np.sqrt((i-x)**2 + (j-y)**2)
                     if dist < radius:
-                        heightmap[i, j] += height * (1 - dist/radius)
+                        heightmap[i, j] += height_val * (1 - dist/radius)
         
-        # Smooth the heightmap
-        for _ in range(smoothing):
-            heightmap = self._smooth_array(heightmap)
+        # Apply smoothing directly using gaussian_filter
+        if smoothing > 0:
+            heightmap = gaussian_filter(heightmap, sigma=smoothing)
             
-        # Normalize to 0-1
-        heightmap = (heightmap - np.min(heightmap)) / (np.max(heightmap) - np.min(heightmap))
+        # Normalize to 0-1 range
+        min_val = np.min(heightmap)
+        max_val = np.max(heightmap)
+        
+        if max_val == min_val: # Handles flat heightmap
+            # If map is flat, set to 0 (or middle gray 0.5, or keep as is if already 0)
+            # For BAR, a completely flat map is unusual but should be handled.
+            # Setting to 0 is safe.
+            return np.zeros_like(heightmap) 
+        
+        heightmap = (heightmap - min_val) / (max_val - min_val)
         return heightmap
     
-    def _smooth_array(self, array, kernel_size=5):
-        """Apply a simple smoothing to an array"""
-        return gaussian_filter(array, sigma=kernel_size)
+    # _smooth_array method is removed as it's no longer used.
     
     def generate_metal_spots(self, heightmap, num_spots=20, min_distance=100):
         """Generate metal spot positions based on heightmap"""
@@ -73,15 +83,20 @@ class BARMapGenerator:
         return spots
     
     def save_heightmap(self, heightmap, name="map01"):
-        """Save heightmap as 16-bit PNG"""
+        """
+        Save heightmap as 16-bit PNG.
+        Filename changed to heightmap.png and mode 'I' specified.
+        """
         # Scale to 16-bit
         heightmap_16bit = (heightmap * 65535).astype(np.uint16)
-        img = Image.fromarray(heightmap_16bit)
+        # Create PIL Image with explicit mode for 16-bit grayscale
+        img = Image.fromarray(heightmap_16bit, mode='I') 
         
         map_dir = os.path.join(self.output_dir, name)
         os.makedirs(map_dir, exist_ok=True)
         
-        img.save(os.path.join(map_dir, "height.png"))
+        # Save with the new filename "heightmap.png"
+        img.save(os.path.join(map_dir, "heightmap.png"))
         return map_dir
     
     def create_map_config(self, map_dir, name, description, metal_spots):
