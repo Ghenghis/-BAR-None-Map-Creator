@@ -33,23 +33,23 @@ class SD7Handler:
            self.logger.addHandler(handler)
            self.logger.setLevel(logging.INFO)
        
-       # Set default directories if not provided
-       if not maps_directory:
-           self.maps_directory = os.path.expanduser("C:\\Users\\Admin\\AppData\\Local\\Programs\\Beyond-All-Reason\\data\\maps")
-       else:
-           self.maps_directory = maps_directory
+       # Paths will need to be set by the application (e.g., loaded from user configuration or via auto-detection)
+       # before operations requiring them can be used.
+       self.maps_directory = maps_directory
+       self.generated_maps_directory = generated_maps_directory
            
-       if not generated_maps_directory:
-           self.generated_maps_directory = os.path.expanduser("C:\\Users\\Admin\\BAR-MapCreator\\generated_maps\\AI_Generated_Map")
+       # Create directories if they don't exist and paths are valid
+       if self.maps_directory and isinstance(self.maps_directory, (str, Path)):
+           os.makedirs(self.maps_directory, exist_ok=True)
+           self.logger.info(f"Maps directory: {self.maps_directory}")
        else:
-           self.generated_maps_directory = generated_maps_directory
-           
-       # Create directories if they don't exist
-       os.makedirs(self.maps_directory, exist_ok=True)
-       os.makedirs(self.generated_maps_directory, exist_ok=True)
-       
-       self.logger.info(f"Maps directory: {self.maps_directory}")
-       self.logger.info(f"Generated maps directory: {self.generated_maps_directory}")
+           self.logger.info("Maps directory not set or invalid.")
+
+       if self.generated_maps_directory and isinstance(self.generated_maps_directory, (str, Path)):
+           os.makedirs(self.generated_maps_directory, exist_ok=True)
+           self.logger.info(f"Generated maps directory: {self.generated_maps_directory}")
+       else:
+           self.logger.info("Generated maps directory not set or invalid.")
 
    def list_installed_maps(self):
        """

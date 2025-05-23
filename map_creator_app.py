@@ -7,12 +7,60 @@ from PIL import Image, ImageTk
 import json
 import subprocess
 import sys
+import pathlib # Added for Path object
+import tempfile # Added for temporary directory
 
 # Import our modules
 from mapgen_core import BARMapGenerator
 from ai_terrain import AITerrainGenerator
-
+from sd7_handler import SD7Handler # Added for SD7Handler
 from logger import setup_logger
+from openai import APIError, AuthenticationError, RateLimitError, APIConnectionError, Timeout as OpenAITimeout # Alias Timeout
+
+# Define the configuration file path
+CONFIG_FILE_PATH = pathlib.Path.home() / ".bar_map_creator_settings.json"
+
+def load_config():
+    """Loads configuration from a JSON file."""
+    if CONFIG_FILE_PATH.exists():
+        try:
+            with open(CONFIG_FILE_PATH, "r") as f:
+                config = json.load(f)
+                return config
+        except (IOError, json.JSONDecodeError) as e:
+            # Log this error appropriately in a real app
+            print(f"Error loading config: {e}") 
+            return {}
+    return {}
+
+def save_config(config_data):
+    """Saves configuration to a JSON file."""
+    try:
+        with open(CONFIG_FILE_PATH, "w") as f:
+            json.dump(config_data, f, indent=4)
+    except IOError as e:
+        # Log this error appropriately
+        print(f"Error saving config: {e}")
+
+def find_bar_installation_path():
+    """
+    Tries to find the BAR installation directory on Windows.
+    Returns the path as a string if found, otherwise None.
+    """
+    potential_paths = [
+        pathlib.Path("C:/Program Files (x86)/Beyond All Reason"),
+        pathlib.Path("C:/Program Files/Beyond All Reason"),
+        pathlib.Path(os.path.expandvars('%LOCALAPPDATA%/Programs/Beyond All Reason')),
+        # Add other common paths here if necessary
+    ]
+
+    # A reliable marker could be the presence of 'bar.exe' or a specific subdirectory like 'engine'
+    marker_file = "bar.exe" 
+
+    for path_candidate in potential_paths:
+        if path_candidate.is_dir() and (path_candidate / marker_file).is_file():
+            return str(path_candidate)
+    return None
 
 class ToolTip:
     """Create a tooltip for a given widget"""
@@ -60,6 +108,9 @@ class BARMapCreatorApp:
         self.text_color = "#CCCCCC"  # Light gray
         self.accent_color = "#FF6B00"  # Bright orange
         self.button_color = "#2A3F5A"  # Medium navy
+
+        # Load configuration
+        self.config = load_config()
         
         # Configure the root window
         self.root.configure(bg=self.bg_color)
@@ -70,9 +121,35 @@ class BARMapCreatorApp:
         self.style.configure('TButton', background=self.button_color, foreground=self.text_color)
         self.style.map('TButton', background=[('active', self.accent_color)])
         
+        # Initialize path variables from config or defaults
+        self.output_path = tk.StringVar(value=self.config.get("output_path", os.path.abspath("generated_maps")))
+        self.install_path = tk.StringVar(value=self.config.get("bar_install_path", ""))
+
+        # Attempt to auto-detect BAR installation path if not set or invalid
+        current_install_path = self.install_path.get()
+        if not current_install_path or not os.path.isdir(current_install_path):
+            self.logger.info("BAR installation path not configured or invalid, attempting auto-detection.")
+            found_path = find_bar_installation_path()
+            if found_path:
+                self.logger.info(f"Auto-detected BAR installation at: {found_path}")
+                self.install_path.set(found_path)
+                self.config["bar_install_path"] = found_path
+                save_config(self.config) # Save the auto-detected path
+            else:
+                self.logger.info("BAR installation path could not be auto-detected.")
+
         # Initialize generators
-        self.map_generator = BARMapGenerator(output_dir="generated_maps")
+        self.map_generator = BARMapGenerator(output_dir=self.output_path.get())
         self.ai_terrain = AITerrainGenerator()
+
+        # Initialize SD7Handler
+        bar_install_dir = self.install_path.get()
+        bar_maps_dir = None
+        if bar_install_dir and os.path.isdir(bar_install_dir):
+            bar_maps_dir = os.path.join(bar_install_dir, "data", "maps")
+        
+        self.sd7_handler = SD7Handler(maps_directory=bar_maps_dir,
+                                      generated_maps_directory=self.output_path.get())
         
         # Map settings
         self.map_name = tk.StringVar(value="AI_Generated_Map")
@@ -149,48 +226,123 @@ class BARMapCreatorApp:
 
     def ask_openai(self, prompt):
         try:
-            import openai
+            import openai # Keep import here to allow for cases where openai is not installed
             import os
             from dotenv import load_dotenv
-            load_dotenv()
+            load_dotenv() # Load variables from .env file
+
             api_key = os.getenv("OPENAI_API_KEY")
             if not api_key:
-                raise ValueError("OPENAI_API_KEY not set in environment or .env file.")
+                error_message = "OPENAI_API_KEY not found. Please create a '.env' file in the application's directory with your API key (e.g., OPENAI_API_KEY='your_key_here'), or set it as an environment variable."
+                self.update_chat_history(f"AI Error: {error_message}\n")
+                self.logger.error(error_message)
+                messagebox.showerror("OpenAI Configuration Error", error_message)
+                return # Stop further execution
+
             client = openai.OpenAI(api_key=api_key)
+            
             response = client.chat.completions.create(
-                model="gpt-4",
+                model="gpt-4", # Consider making the model configurable
                 messages=[{"role": "user", "content": prompt}]
             )
             ai_message = response.choices[0].message.content
             self.update_chat_history(f"AI: {ai_message}\n")
             self.logger.info(f"AI responded: {ai_message}")
-        except Exception as e:
-            self.update_chat_history(f"AI Error: {e}\n")
-            self.logger.error(f"OpenAI Error: {e}")
-            messagebox.showerror("OpenAI Error", str(e))
+
+        except AuthenticationError:
+            error_message = "OpenAI API Key is invalid or you might have run out of credits. Please check your API key and OpenAI account dashboard."
+            self.update_chat_history(f"AI Error: {error_message}\n")
+            self.logger.error(error_message)
+            messagebox.showerror("OpenAI Authentication Error", error_message)
+        except RateLimitError:
+            error_message = "OpenAI API rate limit exceeded. Please try again in a little while or check your usage plan."
+            self.update_chat_history(f"AI Error: {error_message}\n")
+            self.logger.error(error_message)
+            messagebox.showerror("OpenAI Rate Limit Error", error_message)
+        except APIConnectionError:
+            error_message = "Could not connect to OpenAI API. Please check your internet connection."
+            self.update_chat_history(f"AI Error: {error_message}\n")
+            self.logger.error(error_message)
+            messagebox.showerror("OpenAI Connection Error", error_message)
+        except OpenAITimeout: # Using the aliased import
+            error_message = "OpenAI API request timed out. This might be due to network issues or the API being slow. Please try again."
+            self.update_chat_history(f"AI Error: {error_message}\n")
+            self.logger.error(error_message)
+            messagebox.showerror("OpenAI Timeout Error", error_message)
+        except APIError as e: # Catch other OpenAI specific errors
+            error_message = f"An OpenAI API error occurred: {e}"
+            self.update_chat_history(f"AI Error: {error_message}\n")
+            self.logger.error(error_message)
+            messagebox.showerror("OpenAI API Error", error_message)
+        except ValueError as e: # Catch the specific ValueError for API key missing
+            error_message = str(e) # Use the message from ValueError directly
+            self.update_chat_history(f"AI Error: {error_message}\n")
+            self.logger.error(error_message)
+            messagebox.showerror("OpenAI Configuration Error", error_message)
+        except Exception as e: # General fallback
+            error_message = f"An unexpected error occurred while trying to reach the AI: {e}"
+            self.update_chat_history(f"AI Error: {error_message}\n")
+            self.logger.error(f"OpenAI unexpected error: {e}", exc_info=True)
+            messagebox.showerror("OpenAI Error", error_message)
 
     def listen_mic(self):
         try:
             import speech_recognition as sr
+            # import pyaudio # Not strictly needed for OSError, but good for specific pyaudio errors if desired
+
             recognizer = sr.Recognizer()
+            # Adjust recognizer sensitivity to ambient noise if needed
+            # recognizer.dynamic_energy_threshold = True 
+            # recognizer.pause_threshold = 0.8 # seconds of non-speaking audio before a phrase is considered complete
+
             with sr.Microphone() as source:
                 self.update_chat_history("Listening...\n")
                 self.logger.info("Microphone listening started.")
-                audio = recognizer.listen(source)
-            try:
-                text = recognizer.recognize_google(audio)
-                self.chat_entry.delete(0, tk.END)
-                self.chat_entry.insert(0, text)
-                self.update_chat_history(f"(Recognized) {text}\n")
-                self.logger.info(f"Microphone recognized: {text}")
-            except Exception as e:
-                self.update_chat_history(f"Mic Error: {e}\n")
-                self.logger.error(f"Microphone recognition error: {e}")
-                messagebox.showerror("Mic Error", str(e))
-        except Exception as e:
-            self.update_chat_history(f"Mic Setup Error: {e}\n")
-            self.logger.error(f"Microphone setup error: {e}")
-            messagebox.showerror("Mic Setup Error", str(e))
+                # Adjust timeout and phrase_time_limit as needed.
+                # timeout: max seconds to wait for speech before a WaitTimeoutError.
+                # phrase_time_limit: max seconds a phrase can be recorded.
+                try:
+                    audio = recognizer.listen(source, timeout=5, phrase_time_limit=15)
+                except sr.WaitTimeoutError:
+                    self.update_chat_history("Mic Error: No speech detected within the time limit. Please try speaking when you click the mic button.\n")
+                    self.logger.warning("Microphone WaitTimeoutError during listen.")
+                    return # Exit if no speech detected
+
+            self.update_chat_history("Processing audio...\n")
+            self.logger.info("Audio captured, attempting recognition.")
+            
+            text = recognizer.recognize_google(audio)
+            self.chat_entry.delete(0, tk.END)
+            self.chat_entry.insert(0, text)
+            self.update_chat_history(f"You said: {text}\n") # Clarified message
+            self.logger.info(f"Microphone recognized: {text}")
+
+        except sr.WaitTimeoutError: # This might be redundant if caught during listen, but kept for safety
+            self.update_chat_history("Mic Error: No speech detected. Please try again.\n")
+            self.logger.warning("Microphone WaitTimeoutError.")
+        except OSError as e:
+            # This can catch issues like microphone not found or access denied.
+            error_message = (
+                "Mic Setup Error: Microphone not found or not properly configured. "
+                "Please check your system's microphone settings and permissions.\n"
+            )
+            self.update_chat_history(error_message)
+            self.logger.error(f"Microphone OSError: {e}")
+            messagebox.showerror("Mic Setup Error", "Microphone not found, not configured, or access denied. Please check system settings.")
+        except sr.UnknownValueError:
+            self.update_chat_history("Mic Error: Sorry, I could not understand the audio. Please try speaking clearly.\n")
+            self.logger.warning("Microphone UnknownValueError.")
+        except sr.RequestError as e:
+            error_message = (
+                f"Mic Error: Could not request results from speech recognition service; {e}. "
+                "Check your internet connection.\n"
+            )
+            self.update_chat_history(error_message)
+            self.logger.error(f"Microphone RequestError: {e}")
+        except Exception as e: # General fallback for other unexpected errors
+            error_message = f"Mic Error: An unexpected error occurred with speech input: {e}\n"
+            self.update_chat_history(error_message)
+            self.logger.error(f"Microphone unexpected error: {e}", exc_info=True) # Log with stack trace
 
     def validate_map_settings(self):
         if self.map_size.get() < 4 or self.map_size.get() > 64:
@@ -340,11 +492,11 @@ class BARMapCreatorApp:
         output_label = ttk.Label(output_frame, text="Output Directory:")
         output_label.pack(side=tk.LEFT)
         
-        self.output_path = tk.StringVar(value=os.path.abspath("generated_maps"))
+        # self.output_path is now initialized in __init__
         output_entry = ttk.Entry(output_frame, textvariable=self.output_path, state="readonly")
         output_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
         
-        browse_button = ttk.Button(output_frame, text="...", width=3, command=self.browse_output)
+        browse_button = ttk.Button(output_frame, text="...", width=3, command=self.browse_output_and_save_config)
         browse_button.pack(side=tk.RIGHT)
         
         # Installation path
@@ -354,15 +506,13 @@ class BARMapCreatorApp:
         install_label.pack(side=tk.LEFT)
         
         # Try to find BAR installation
-        default_path = "C:/Users/Admin/AppData/Local/Programs/Beyond-All-Reason"
-        if not os.path.exists(default_path):
-            default_path = ""
-        
-        self.install_path = tk.StringVar(value=default_path)
+        # The application will need to implement a method to auto-detect this path 
+        # or allow the user to set it. This value would then be loaded (e.g., from a config).
+        # self.install_path is now initialized in __init__
         install_entry = ttk.Entry(install_frame, textvariable=self.install_path, state="readonly")
         install_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
         
-        browse_install_button = ttk.Button(install_frame, text="...", width=3, command=self.browse_install)
+        browse_install_button = ttk.Button(install_frame, text="...", width=3, command=self.browse_install_and_save_config)
         browse_install_button.pack(side=tk.RIGHT)
         
         # Right panel (preview)
@@ -382,16 +532,33 @@ class BARMapCreatorApp:
         status_bar = ttk.Label(self.root, textvariable=self.status_var, relief=tk.SUNKEN, anchor=tk.W)
         status_bar.pack(side=tk.BOTTOM, fill=tk.X)
     
-    def browse_output(self):
+    def browse_output_and_save_config(self):
         directory = filedialog.askdirectory(initialdir=self.output_path.get())
         if directory:
             self.output_path.set(directory)
             self.map_generator.output_dir = directory
+            if hasattr(self, 'sd7_handler'): # Ensure sd7_handler exists
+                self.sd7_handler.generated_maps_directory = directory
+            self.config["output_path"] = directory
+            save_config(self.config)
     
-    def browse_install(self):
+    def browse_install_and_save_config(self):
         directory = filedialog.askdirectory(initialdir=self.install_path.get())
         if directory:
             self.install_path.set(directory)
+            self.config["bar_install_path"] = directory
+            save_config(self.config)
+            # Update SD7Handler's maps_directory
+            if hasattr(self, 'sd7_handler'): # Ensure sd7_handler exists
+                bar_maps_dir = None
+                if directory and os.path.isdir(directory):
+                    bar_maps_dir = os.path.join(directory, "data", "maps")
+                self.sd7_handler.maps_directory = bar_maps_dir
+                # Re-create relevant directories if they were None before
+                if self.sd7_handler.maps_directory and isinstance(self.sd7_handler.maps_directory, (str, pathlib.Path)):
+                    os.makedirs(self.sd7_handler.maps_directory, exist_ok=True)
+                    self.logger.info(f"SD7Handler maps directory updated: {self.sd7_handler.maps_directory}")
+
     
     def generate_preview(self):
         self.status_var.set("Generating preview...")
@@ -408,8 +575,9 @@ class BARMapCreatorApp:
         # Store the heightmap for later use
         self.current_heightmap = heightmap
         
-        # Generate a preview image
-        preview_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "preview.png")
+        # Generate a preview image in the system's temporary directory
+        temp_dir = tempfile.gettempdir()
+        preview_file = os.path.join(temp_dir, "bar_map_preview.png")
         self.ai_terrain.save_preview(heightmap, preview_file)
         
         # Display the preview
@@ -509,94 +677,7 @@ class BARMapCreatorApp:
             self.root.after(0, lambda: self.status_var.set(f"Error creating map: {e}"))
             self.root.after(0, lambda: messagebox.showerror("Error", f"Failed to create map: {e}"))
 
-# Create requirements.txt file
-def create_requirements():
-    requirements = [
-        "numpy",
-        "pillow",
-        "scipy"
-    ]
-    
-    with open("requirements.txt", "w") as f:
-        f.write("\n".join(requirements))
-
-# Create README file
-def create_readme():
-    readme_content = """# Beyond All Reason - AI Map Creator
-
-A simple AI-powered map generator for Beyond All Reason.
-
-## Features
-
-- AI-generated terrain patterns
-- Customizable map settings
-- Preview generation
-- Complete map file creation
-
-## Requirements
-
-- Python 3.7+
-- Required packages (install with `pip install -r requirements.txt`):
-  - numpy
-  - pillow
-  - scipy
-
-## Usage
-
-1. Run `python map_creator_app.py`
-2. Configure map settings
-3. Generate a preview
-4. Create the map
-5. Copy the generated files to your BAR maps directory
-
-## Map Types
-
-- Mountain Range: Creates mountain ridges with peaks
-- River Valley: Creates a river valley with surrounding terrain
-- Plateau: Creates elevated flat areas with cliff edges
-- Crater: Creates a terrain with multiple impact craters
-- Hills: Creates a natural hilly terrain
-- Archipelago: Creates islands surrounded by water
-
-## Installation
-
-```
-pip install -r requirements.txt
-python map_creator_app.py
-```
-
-## Notes
-
-This tool generates map files compatible with Beyond All Reason. To use the generated maps:
-
-1. Copy the files from the output directory to your BAR maps directory
-2. The maps will appear in the game's map selection menu
-
-## Credits
-
-Created with AI assistance for Beyond All Reason community.
-"""
-    
-    with open("README.md", "w") as f:
-        f.write(readme_content)
-
-# Create startup script
-def create_startup_script():
-    bat_content = """@echo off
-echo Starting BAR Map Creator...
-python map_creator_app.py
-pause
-"""
-    
-    with open("start_map_creator.bat", "w") as f:
-        f.write(bat_content)
-
 if __name__ == "__main__":
-    # Create supporting files
-    create_requirements()
-    create_readme()
-    create_startup_script()
-
     # Start the application
     root = tk.Tk()
     app = BARMapCreatorApp(root)
